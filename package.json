@@ -8,8 +8,10 @@
 		"data": "bun run scripts/metadata/build.ts",
 		"build": "bun run data && vite build",
 		"preview": "vite preview",
+		"og": "bun run scripts/build-og.ts",
+		"seo": "bun run scripts/seo-check.ts",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && bun run seo",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
 		"format": "prettier --write ."

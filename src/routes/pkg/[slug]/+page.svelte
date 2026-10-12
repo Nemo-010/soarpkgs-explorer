@@ -2,6 +2,8 @@
 	import { base } from '$app/paths';
 	import CopyButton from '$lib/components/CopyButton.svelte';
 	import CopyCommand from '$lib/components/CopyCommand.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { datasetMeta } from '$lib/catalog';
 	import {
 		archLabel,
 		formatDate,
@@ -11,6 +13,7 @@
 		runCommand,
 		soarLink
 	} from '$lib/format';
+	import { SITE_NAME, absoluteUrl } from '$lib/site';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -90,14 +93,41 @@
 	function browseLink(param: string, value: string): string {
 		return `${base}/?${param}=${encodeURIComponent(value)}`;
 	}
+
+	const description = $derived(pkg.description || `The ${pkg.pkg_name} package on soarpkgs.`);
+	const pagePath = $derived(`/pkg/${pkg.slug}/`);
+
+	// Structured data describes the latest published version, so it is computed
+	// from the newest build rather than the version picker's selection.
+	const jsonLd = $derived.by(() => {
+		const latest = allVersions[0] ?? '';
+		const allDownloadUrls = pkg.arches
+			.map((arch) => pkg.builds[arch]?.download_url)
+			.filter((url): url is string => !!url);
+		return JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'SoftwareApplication',
+			name: pkg.pkg_name,
+			description,
+			url: absoluteUrl(pagePath),
+			softwareVersion: latest,
+			operatingSystem: 'Linux',
+			...(pkg.categories.length > 0 && {
+				applicationCategory: pkg.categories[0],
+				keywords: pkg.categories.join(', ')
+			}),
+			...(pkg.licenses.length > 0 && { license: pkg.licenses.join(', ') }),
+			...(allDownloadUrls.length > 0 && { downloadUrl: allDownloadUrls }),
+			dateModified: datasetMeta.builtAt
+		}).replace(/</g, '\\u003c');
+	});
 </script>
 
 <svelte:head>
-	<title>{pkg.pkg_name} · soarpkgs explorer</title>
-	<meta
-		name="description"
-		content={pkg.description ?? `The ${pkg.pkg_name} package on soarpkgs.`}
-	/>
+	<Seo title={`${pkg.pkg_name} · ${SITE_NAME}`} {description} path={pagePath} />
+	<!-- A literal <script> in the template is verbatim text, so the element is
+	     injected instead of interpolating into it. -->
+	{@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
 
 <article class="detail">

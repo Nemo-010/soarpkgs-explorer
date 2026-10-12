@@ -5,8 +5,10 @@
 	import { page } from '$app/state';
 	import FacetGroup from '$lib/components/FacetGroup.svelte';
 	import PackageRow from '$lib/components/PackageRow.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { datasetMeta, facets, searchEntries } from '$lib/catalog';
 	import { archLabel } from '$lib/format';
+	import { SITE_NAME, SITE_TAGLINE, absoluteUrl } from '$lib/site';
 	import {
 		activeFilterCount,
 		isDefaultState,
@@ -154,15 +156,34 @@
 			}))
 		)
 	);
+
+	const siteUrl = absoluteUrl('/');
+	const description = `Browse and search ${datasetMeta.packageCount} packages from the pkgforge soarpkgs repository.`;
+	// `<` is escaped so a description containing it cannot close the script tag.
+	const jsonLd = JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: SITE_NAME,
+		url: siteUrl,
+		potentialAction: {
+			'@type': 'SearchAction',
+			target: {
+				'@type': 'EntryPoint',
+				urlTemplate: `${siteUrl}?q={search_term_string}`
+			},
+			'query-input': 'required name=search_term_string'
+		}
+	}).replace(/</g, '\\u003c');
 </script>
 
 <svelte:head>
-	<title>soarpkgs explorer</title>
-	<meta
-		name="description"
-		content="Browse and search {datasetMeta.packageCount} packages from the pkgforge soarpkgs repository."
-	/>
+	<Seo title={`${SITE_NAME}: ${SITE_TAGLINE}`} {description} path="/" />
+	<!-- A literal <script> in the template is verbatim text, so the element is
+	     injected instead of interpolating into it. -->
+	{@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
+
+<h1 class="vh">{SITE_NAME}: {SITE_TAGLINE}</h1>
 
 <svelte:window onkeydown={onKeydown} />
 
@@ -321,6 +342,17 @@
 </div>
 
 <style>
+	/* Named for the listing it introduces; visually hidden, read by crawlers
+	   and screen readers. The page is otherwise all headings of level 2. */
+	h1.vh {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
 	/* Hidden rather than removed, so revealing it cannot shift the layout. */
 	:global(html[data-pending]) .browse {
 		visibility: hidden;

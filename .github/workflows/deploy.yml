@@ -39,6 +39,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Deploy runs only if the build succeeded, so a failed build never ships.
+      - name: Check SEO metadata
+        run: bun run seo
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
