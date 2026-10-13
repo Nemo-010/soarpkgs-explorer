@@ -124,7 +124,13 @@
 </script>
 
 <svelte:head>
-	<Seo title={`${pkg.pkg_name} · ${SITE_NAME}`} {description} path={pagePath} />
+	<Seo
+		title={`${pkg.pkg_name} · ${SITE_NAME}`}
+		{description}
+		path={pagePath}
+		image={`/og/pkg/${pkg.slug}.png`}
+		imageAlt="{pkg.pkg_name} on {SITE_NAME}"
+	/>
 	<!-- A literal <script> in the template is verbatim text, so the element is
 	     injected instead of interpolating into it. -->
 	{@html `<script type="application/ld+json">${jsonLd}</script>`}

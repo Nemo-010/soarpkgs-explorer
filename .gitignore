@@ -27,6 +27,9 @@ vite.config.ts.timestamp-*
 
 # Build-time generated data and downloaded metadata
 /src/lib/generated
+
+# Generated Open Graph cards (rebuilt by `bun run og` during `bun run build`)
+/static/og/pkg
 /.metadata-cache
 
 # Local screenshots / browser automation artifacts

@@ -3,7 +3,8 @@
  *
  * Verifies that every prerendered page ships the expected head metadata
  * (title, description, canonical, Open Graph, Twitter card, valid JSON-LD),
- * that every sitemap URL resolves to a real page and vice versa, and that
+ * that every page's og:image points at a card that exists in the build, that
+ * every sitemap URL resolves to a real page and vice versa, and that
  * robots.txt points at the sitemap. Exits non-zero on any problem.
  *
  * Run after `bun run build` (wired into `bun run check`).
@@ -62,9 +63,28 @@ for (const file of pages) {
 	const ogTitle = first(html, /<meta property="og:title" content="([^"]*)"/);
 	const ogUrl = first(html, /<meta property="og:url" content="([^"]*)"/);
 	const ogImage = first(html, /<meta property="og:image" content="([^"]*)"/);
+	const twitterImage = first(html, /<meta name="twitter:image" content="([^"]*)"/);
 	if (ogTitle === null) fail(`${where} missing og:title`);
 	if (ogUrl !== url) fail(`${where} og:url is ${ogUrl}, expected ${url}`);
-	if (ogImage !== `${SITE_URL}/og.png`) fail(`${where} og:image is ${ogImage}`);
+	// The image must be on our origin and actually exist in the build, so a
+	// card that failed to generate fails the deploy instead of shipping a
+	// broken preview.
+	for (const [label, image] of [
+		['og:image', ogImage],
+		['twitter:image', twitterImage]
+	] as const) {
+		if (image === null) {
+			fail(`${where} missing ${label}`);
+			continue;
+		}
+		if (!image.startsWith(`${SITE_URL}/`)) {
+			fail(`${where} ${label} is ${image}, outside ${SITE_URL}`);
+			continue;
+		}
+		const imagePath = image.slice(SITE_URL.length);
+		if (!existsSync(join(BUILD, imagePath)))
+			fail(`${where} ${label} points to missing ${imagePath}`);
+	}
 
 	if (!/<meta name="twitter:card" content="summary_large_image"/.test(html)) {
 		fail(`${where} missing twitter:card`);

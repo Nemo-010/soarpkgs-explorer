@@ -177,7 +177,12 @@
 </script>
 
 <svelte:head>
-	<Seo title={`${SITE_NAME}: ${SITE_TAGLINE}`} {description} path="/" />
+	<Seo
+		title={`${SITE_NAME}: ${SITE_TAGLINE}`}
+		{description}
+		path="/"
+		imageAlt="{SITE_NAME}: {SITE_TAGLINE}"
+	/>
 	<!-- A literal <script> in the template is verbatim text, so the element is
 	     injected instead of interpolating into it. -->
 	{@html `<script type="application/ld+json">${jsonLd}</script>`}

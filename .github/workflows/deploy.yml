@@ -28,6 +28,13 @@ jobs:
       - name: Set up tools
         uses: jdx/mise-action@v2
 
+      # The Open Graph cards are rendered with ffmpeg's drawtext filter, so CI
+      # needs ffmpeg (with libfreetype) and the JetBrains Mono fonts.
+      - name: Install ffmpeg and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-jetbrains-mono
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
