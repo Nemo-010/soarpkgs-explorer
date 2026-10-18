@@ -7,10 +7,7 @@
 
 	let { entry, index }: { entry: SearchEntry; index: number } = $props();
 
-	// Carry the listing's filters and sort so the detail page can offer a back
-	// link that returns to the same view rather than resetting it. The query is
-	// client-only; a prerendered row links to the plain detail URL.
-	const href = $derived(`${base}/pkg/${entry.slug}/${browser ? page.url.search : ''}`);
+	const href = $derived(`${base}/pkg/${entry.slug}/${page.url.search}`);
 </script>
 
 <a class="row" {href} data-result={index} tabindex={index === 0 ? 0 : -1}>
